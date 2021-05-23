@@ -54,12 +54,12 @@ namespace Selection
         void Start()
         {
             texs = new Texture2D[]{
-                Instantiate(Resources.Load("Selection/Circle")) as Texture2D,
-                Instantiate(Resources.Load("Selection/Square")) as Texture2D,
-                Instantiate(Resources.Load("Selection/Capsule")) as Texture2D,
-                Instantiate(Resources.Load("Selection/HexagonFlat-Top")) as Texture2D,
-                Instantiate(Resources.Load("Selection/HexagonPointed-Top")) as Texture2D,
-                Instantiate(Resources.Load("Selection/IsometricDiamond")) as Texture2D,
+                Resources.Load("Selection/Circle") as Texture2D,
+                Resources.Load("Selection/Square") as Texture2D,
+                Resources.Load("Selection/Capsule") as Texture2D,
+                Resources.Load("Selection/HexagonFlat-Top") as Texture2D,
+                Resources.Load("Selection/HexagonPointed-Top") as Texture2D,
+                Resources.Load("Selection/IsometricDiamond") as Texture2D,
             };
             BuildLevel();
             ShapeSpriteScript.gameManager = this;
