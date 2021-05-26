@@ -1,7 +1,7 @@
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 namespace Selection
 {
@@ -58,17 +58,17 @@ namespace Selection
         void Start()
         {
             BuildLevel();
+
+            GameObject correctAudioSourceObj = Instantiate(Resources.Load("Selection/CorrectAudioSource"), this.transform) as GameObject;
+            GameObject wrongAudioSourceObj = Instantiate(Resources.Load("Selection/WrongAudioSource"), this.transform) as GameObject;
+
             ColorSpriteScript.gameManager = this;
+            ColorSpriteScript.wrongAS = wrongAudioSourceObj.GetComponent<AudioSource>();
+            ColorSpriteScript.correctAS = correctAudioSourceObj.GetComponent<AudioSource>();
         }
 
         public void LevelUp()
         {
-            if (levels <= 0)
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-                return;
-            }
-
             // Destroying previous objects
             foreach (GameObject obj in objects)
             {
@@ -76,8 +76,34 @@ namespace Selection
             }
             Destroy(indicatorObj);
 
+            if (levels <= 0)
+            {
+                StartCoroutine("GameDone");
+                return;
+            }
+
             --levels;
             BuildLevel();
+        }
+
+        public IEnumerator GameDone()
+        {
+            // Remove indicatorText
+            Destroy(GameObject.FindGameObjectWithTag("IndicatorText"));
+
+            // Display congratulationsText & Button
+            GameObject congratulationsTextObj = Instantiate(Resources.Load("Selection/CongratulationsText"), this.transform.parent.transform) as GameObject;
+            GameObject nextSceneButtonObj = Instantiate(Resources.Load("Selection/NextSceneButton"), this.transform.parent.transform) as GameObject;
+
+            GameObject congratulationsAudioSourceObj = Instantiate(Resources.Load("Selection/CongratulationsAudioSource"), congratulationsTextObj.transform) as GameObject;
+            AudioSource congratulationsAudioSource = congratulationsAudioSourceObj.GetComponent<AudioSource>();
+            Button btn = nextSceneButtonObj.GetComponent<Button>();
+
+            // Disabling button until congratulations sound effect is played
+            btn.interactable = false;
+            congratulationsAudioSource.PlayOneShot(congratulationsAudioSource.clip);
+            yield return new WaitWhile(() => congratulationsAudioSource.isPlaying);
+            btn.interactable = true;
         }
     }
 }

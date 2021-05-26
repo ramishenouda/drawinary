@@ -1,7 +1,7 @@
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 namespace Selection
 {
@@ -26,7 +26,7 @@ namespace Selection
             {
                 objects[i] = Instantiate(Resources.Load("Selection/ShapeSprite"), this.transform) as GameObject;
 
-                // Changing sprite color
+                // Changing sprite texture
                 RawImage objRi = objects[i].GetComponent<RawImage>();
                 objRi.texture = lvlTexs[i];
 
@@ -45,7 +45,7 @@ namespace Selection
             // Displaying below
             RawImage indicatorRi = indicatorObj.GetComponent<RawImage>();
 
-            // Selecting a random color
+            // Selecting a random texture
             int index = rand.Next(0, lvlTexs.Length);
             indicatorRi.texture = lvlTexs[index];
 
@@ -62,17 +62,17 @@ namespace Selection
                 Resources.Load("Selection/IsometricDiamond") as Texture2D,
             };
             BuildLevel();
+
+            GameObject correctAudioSourceObj = Instantiate(Resources.Load("Selection/CorrectAudioSource"), this.transform) as GameObject;
+            GameObject wrongAudioSourceObj = Instantiate(Resources.Load("Selection/WrongAudioSource"), this.transform) as GameObject;
+
             ShapeSpriteScript.gameManager = this;
+            ShapeSpriteScript.wrongAS = wrongAudioSourceObj.GetComponent<AudioSource>();
+            ShapeSpriteScript.correctAS = correctAudioSourceObj.GetComponent<AudioSource>();
         }
 
         public void LevelUp()
         {
-            if (levels <= 0)
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-                return;
-            }
-
             // Destroying previous objects
             foreach (GameObject obj in objects)
             {
@@ -80,8 +80,34 @@ namespace Selection
             }
             Destroy(indicatorObj);
 
+            if (levels <= 0)
+            {
+                StartCoroutine("GameDone");
+                return;
+            }
+
             --levels;
             BuildLevel();
+        }
+
+        public IEnumerator GameDone()
+        {
+            // Remove indicatorText
+            Destroy(GameObject.FindGameObjectWithTag("IndicatorText"));
+
+            // Display congratulationsText & Button
+            GameObject congratulationsTextObj = Instantiate(Resources.Load("Selection/CongratulationsText"), this.transform.parent.transform) as GameObject;
+            GameObject nextSceneButtonObj = Instantiate(Resources.Load("Selection/NextSceneButton"), this.transform.parent.transform) as GameObject;
+
+            GameObject congratulationsAudioSourceObj = Instantiate(Resources.Load("Selection/CongratulationsAudioSource"), congratulationsTextObj.transform) as GameObject;
+            AudioSource congratulationsAudioSource = congratulationsAudioSourceObj.GetComponent<AudioSource>();
+            Button btn = nextSceneButtonObj.GetComponent<Button>();
+
+            // Disabling button until congratulations sound effect is played
+            btn.interactable = false;
+            congratulationsAudioSource.PlayOneShot(congratulationsAudioSource.clip);
+            yield return new WaitWhile(() => congratulationsAudioSource.isPlaying);
+            btn.interactable = true;
         }
     }
 }
